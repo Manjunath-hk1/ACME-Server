@@ -88,7 +88,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(ChallengeId), ChallengeId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status),(Int32) Status);
 
             info.AddValue(nameof(Type), Type);
             info.AddValue(nameof(Token), Token);

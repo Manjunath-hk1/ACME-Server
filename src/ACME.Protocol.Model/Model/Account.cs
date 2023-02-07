@@ -58,7 +58,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(AccountId), AccountId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status),(Int32) Status);
             info.AddValue(nameof(Jwk), Jwk);
 
             info.AddValue(nameof(Contacts), Contacts);

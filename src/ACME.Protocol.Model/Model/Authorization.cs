@@ -96,7 +96,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(AuthorizationId), AuthorizationId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status),(Int32) Status);
             
             info.AddValue(nameof(Identifier), Identifier);
             info.AddValue(nameof(Expires), Expires);

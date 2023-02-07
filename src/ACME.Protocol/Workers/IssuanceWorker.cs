@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.IssuanceServices;
 using TGIT.ACME.Protocol.Model;
@@ -30,7 +32,24 @@ namespace TGIT.ACME.Protocol.Workers
 
         private async Task IssueCertificate(Order order, CancellationToken cancellationToken)
         {
-            var (certificate, error) = await _issuer.IssueCertificate(order.CertificateSigningRequest!, cancellationToken);
+            StringBuilder? sans = new StringBuilder();
+            if (order.Identifiers != null)
+            {
+                foreach (Identifier san in order.Identifiers)
+                {
+                    if (sans != null)
+                    {
+                        sans.Append(san.Value).Append(',');
+                    }
+                    else
+                    {
+                        sans.Append(san.Value);
+                    }
+                }
+
+            }
+
+            var (certificate, error) = await _issuer.IssueCertificate(order.CertificateSigningRequest!, sans.ToString(), cancellationToken);
 
             if (certificate == null)
             {

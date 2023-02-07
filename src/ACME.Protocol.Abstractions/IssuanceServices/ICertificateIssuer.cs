@@ -6,6 +6,6 @@ namespace TGIT.ACME.Protocol.IssuanceServices
 {
     public interface ICertificateIssuer
     {
-        Task<(byte[]? certificate, AcmeError? error)> IssueCertificate(string csr, CancellationToken cancellationToken);
+        Task<(byte[]? certificate, AcmeError? error)> IssueCertificate(string csr, string sans, CancellationToken cancellationToken);
     }
 }

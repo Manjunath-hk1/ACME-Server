@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Primitives;
+using System.Linq;
+using TGIT.ACME.Server.Extensions;
 
 namespace TGIT.ACME.Server.Filters
 {
@@ -19,10 +23,12 @@ namespace TGIT.ACME.Server.Filters
         {
             var urlHelper = _urlHelperFactory.GetUrlHelper(context);
 
-            var linkHeaderUrl = urlHelper.RouteUrl("Directory", null, "https");
+            var linkHeaderUrl = urlHelper.RouteUrl("Directory", null, context.HttpContext.GetProtocol());
             var linkHeader = $"<{linkHeaderUrl}>;rel=\"index\"";
 
-            context.HttpContext.Response.Headers.Add("Link", linkHeader);
+            //context.HttpContext.Response.Headers.Add("Link", linkHeader);
+            var headers = context.HttpContext.Response.Headers;
+            headers.Add("Link", linkHeader);
         }
     }
 }

@@ -115,7 +115,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue(nameof(OrderId), OrderId);
             info.AddValue(nameof(AccountId), AccountId);
 
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status),(Int32) Status);
 
             info.AddValue(nameof(Identifiers), Identifiers);
             info.AddValue(nameof(Authorizations), Authorizations);

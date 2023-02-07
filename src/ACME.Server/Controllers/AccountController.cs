@@ -5,6 +5,8 @@ using TGIT.ACME.Protocol.HttpModel.Requests;
 using TGIT.ACME.Protocol.Model.Exceptions;
 using TGIT.ACME.Protocol.Services;
 using TGIT.ACME.Server.Filters;
+using TGIT.ACME.Server.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace TGIT.ACME.Server.Controllers
 {
@@ -12,24 +14,33 @@ namespace TGIT.ACME.Server.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, ILogger<AccountController> logger)
         {
             _accountService = accountService;
+            _logger = logger;   
         }
 
         [Route("/new-account", Name = "NewAccount")]
         [HttpPost]
         public async Task<ActionResult<Protocol.HttpModel.Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
-            if(payload.Value.OnlyReturnExisting)
+
+            if (payload.Value.OnlyReturnExisting)
+            {
                 return await FindAccountAsync(payload);
+            }
+
+            
 
             return await CreateAccountAsync(header, payload);
         }
 
         private async Task<ActionResult<Protocol.HttpModel.Account>> CreateAccountAsync(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
+            _logger.LogInformation(1001, $"New account creation starting with Kid {header.Kid} and nounce {header.Nonce}.");
+
             if (payload == null)
                 throw new MalformedRequestException("Payload was empty or could not be read.");
 
@@ -39,10 +50,11 @@ namespace TGIT.ACME.Server.Controllers
                 payload.Value.TermsOfServiceAgreed,
                 HttpContext.RequestAborted);
 
-            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, "https");
+            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
 
-            var accountUrl = Url.RouteUrl("Account", new { accountId = account.AccountId }, "https");
+            var accountUrl = Url.RouteUrl("Account", new { accountId = account.AccountId }, HttpContext.GetProtocol());
+            _logger.LogInformation(1002, $"New account creation complete with account ID {@account.AccountId}.");
             return new CreatedResult(accountUrl, accountResponse);
         }
 

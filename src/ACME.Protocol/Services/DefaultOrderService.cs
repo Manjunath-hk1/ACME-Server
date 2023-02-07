@@ -65,19 +65,27 @@ namespace TGIT.ACME.Protocol.Services
 
             var authZ = order.GetAuthorization(authId);
             var challenge = authZ?.GetChallenge(challengeId);
-            
+            //if (order.Status != OrderStatus.Ready)
+            //{
+
             if (authZ == null || challenge == null)
                 throw new NotFoundException();
 
-            if (authZ.Status != AuthorizationStatus.Pending)
-                throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
-            if (challenge.Status != ChallengeStatus.Pending)
-                throw new ConflictRequestException(ChallengeStatus.Pending, challenge.Status);
+            if (challenge.Status == ChallengeStatus.Processing)
+                return challenge;
+            if (authZ.Status != AuthorizationStatus.Valid && challenge.Status != ChallengeStatus.Valid)
+            {
+                if (authZ.Status != AuthorizationStatus.Pending)
+                    throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
+                if (challenge.Status != ChallengeStatus.Pending)
+                    throw new ConflictRequestException(ChallengeStatus.Pending, challenge.Status);
 
-            challenge.SetStatus(ChallengeStatus.Processing);
-            authZ.SelectChallenge(challenge);
+                challenge.SetStatus(ChallengeStatus.Processing);
+                authZ.SelectChallenge(challenge);
 
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
+                await _orderStore.SaveOrderAsync(order, cancellationToken);
+            }
+            //}
 
             return challenge;
         }
@@ -120,12 +128,14 @@ namespace TGIT.ACME.Protocol.Services
             var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
             if (order == null)
                 throw new NotFoundException();
+            if (order.Status != OrderStatus.Ready)
+            {
+                if (expectedStatus.HasValue && order.Status != expectedStatus)
+                    throw new ConflictRequestException(expectedStatus.Value, order.Status);
 
-            if (expectedStatus.HasValue && order.Status != expectedStatus)
-                throw new ConflictRequestException(expectedStatus.Value, order.Status);
-
-            if (order.AccountId != account.AccountId)
-                throw new NotAllowedException();
+                if (order.AccountId != account.AccountId)
+                    throw new NotAllowedException();
+            }
 
             return order;
         }
